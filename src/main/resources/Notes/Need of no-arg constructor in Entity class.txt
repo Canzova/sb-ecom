@@ -1,0 +1,18 @@
+🔹 Why do we need a no-argument constructor in an @Entity?
+
+---> JPA / Hibernate requires it
+
+When Hibernate (or any JPA provider) loads data from the database, it does not call your custom constructor.
+Instead, it uses reflection to create an empty object and then sets the fields one by one.
+For this to work, it needs a no-args (default) constructor.
+
+---> Proxy creation
+
+Hibernate sometimes creates “proxy objects” (lazy loading).
+These proxies extend your entity class internally and rely on the default constructor to initialize properly.
+
+---> Spec compliance
+
+According to the JPA specification, every entity class must have a public or protected no-argument constructor.
+If you don’t provide one, JPA may throw errors like:
+org.hibernate.InstantiationException: No default constructor for entity

@@ -1,0 +1,6 @@
+Lombok is a java library which help us to write less boilerplate codes, such as :
+
+---> Getters/setters
+---> Constructors etc.
+
+You can add lombok into your Code editor. Also, you have to add this dependency into you pom.xml

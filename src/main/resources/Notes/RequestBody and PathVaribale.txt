@@ -1,0 +1,62 @@
+🔹 @PathVariable
+----> Used to extract values from the URL path.
+---->  Imagine you want to get a user by ID. The ID is part of the URL itself.
+----> Variable name is method parameter should be same as mentioned in the RequestMapping
+
+Example:
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    public String getUser(@PathVariable int id) {
+        return "User ID: " + id;
+    }
+}
+
+
+👉 If you call:
+GET /users/5
+Response:
+User ID: 5
+
+🌟 Why use it?
+Because IDs or resource identifiers are often part of the URL path in REST APIs.
+
+🔹 @RequestBody
+----> Used to extract data from the request body (JSON, XML, etc.).
+----> Typically used in POST/PUT requests when sending complex data (objects).
+
+Example:
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @PostMapping
+    public String createUser(@RequestBody User user) {
+        return "Created user: " + user.getName();
+    }
+}
+
+
+👉 If you send a request:
+
+POST /users
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "John"
+}
+
+
+Response:
+Created user: John
+
+✔ Why use it?
+Because when creating/updating data, clients usually send JSON in the body, not in the URL.
+
+✅ In short:
+
+Use @PathVariable when data is part of the URL.
+Use @RequestBody when data is part of the request body (JSON/XML).

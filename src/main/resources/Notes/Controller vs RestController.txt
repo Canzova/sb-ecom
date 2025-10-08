@@ -1,0 +1,8 @@
+🔹 @Controller
+------> Used in Spring MVC (web applications).
+------> Typically returns a view (HTML page), not JSON.
+
+🔹 @RestController
+------>  Introduced for REST APIs.
+------>  It is actually @Controller + @ResponseBody.
+------>  Always returns data (JSON, XML, plain text, etc.), not views.

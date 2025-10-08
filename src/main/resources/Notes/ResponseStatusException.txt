@@ -1,0 +1,42 @@
+
+ResponseStatusException :
+
+ResponseStatusException is used to return proper HTTP status codes and messages from Spring REST controllers
+when something goes wrong (e.g., bad input, missing resource, forbidden action, etc.).
+
+🔹 What is ResponseStatusException?
+
+ResponseStatusException is a class in Spring Framework (Spring Web) that represents an HTTP status code error
+which you can throw in your code.
+
+It is part of org.springframework.web.server.ResponseStatusException.
+
+When thrown inside a Spring Web (Spring MVC or Spring WebFlux) controller, it tells Spring to return an HTTP error response with:
+
+----> a specific HTTP status code (like 404 NOT_FOUND, 400 BAD_REQUEST, etc.),
+
+----> an optional error message, and
+
+----> an optional cause (exception).
+
+🔹 Why do we use it?
+
+We use ResponseStatusException to signal errors in REST APIs or web applications in a clear, standardized way.
+Instead of returning raw exceptions or vague error messages, it allows you to map business errors to proper HTTP status codes.
+
+ ----------------------------------------------------------------------------------------------------------------------------
+
+ Used in CategoryServiceImp : To give a standard status code and message if the category is not found
+
+   Category category = categories.stream()
+                 .filter((c) -> c.getCategoryId().equals(categoryId))
+                 .findFirst()
+                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "This resource is not present."));
+
+ ✅ How to use the status code and message ?
+
+ with .getReasin() .getStatusCode()
+
+ catch (ResponseStatusException e){
+             return new ResponseEntity<>(e.getReason(), e.getStatusCode());
+         }

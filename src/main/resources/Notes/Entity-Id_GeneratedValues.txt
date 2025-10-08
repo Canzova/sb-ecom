@@ -1,0 +1,20 @@
+1. @Entity
+----> Marks a class as a database table.
+----> Each object (instance of that class) = row in the table.
+----> Each field = column in the table.
+
+2. @Id
+----> Marks a field as the primary key (unique identifier of the row).
+----> Every table must have a primary key.
+
+3. @GeneratedValue
+----> Tells JPA how to generate the primary key automatically when inserting new rows.
+
+----> Types of Generation Strategies:
+@GeneratedValue(strategy = GenerationType.AUTO)
+
+
+----> AUTO → Let JPA decide the best strategy based on the database. (Default)
+----> IDENTITY → Database auto-generates the value (like MySQL’s AUTO_INCREMENT).
+----> SEQUENCE → Uses a database sequence (works best with databases like PostgreSQL, Oracle).
+----> TABLE → Uses a special table to generate IDs (rarely used, slower).

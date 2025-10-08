@@ -1,0 +1,207 @@
+
+
+## 🧩 What the code of MyGlobalExceptionHandler does
+
+This class:
+
+@RestControllerAdvice
+public class MyGlobalExceptionHandler {
+   ...
+}
+
+👉 Is used to **catch exceptions (errors)** that happen **anywhere in your app**,
+so that instead of returning ugly error messages,
+you can return **clean, custom JSON responses**.
+
+Think of it like a **global error manager** for your project.
+
+---
+
+## 🧠 Let’s understand each part slowly
+
+---
+
+### 🏷️ 1. `@RestControllerAdvice`
+
+* This annotation tells Spring:
+
+  > “Hey Spring, this class will handle exceptions for all my REST controllers.”
+
+So if *any* controller throws an error — Spring sends it here.
+
+It’s basically a **global error catcher** for your REST APIs.
+
+🧩 You can think of it as:
+
+> “Try...catch block for your whole project.”
+
+---
+
+### 🛠️ 2. `@ExceptionHandler(MethodArgumentNotValidException.class)`
+
+This tells Spring:
+
+> “If a `MethodArgumentNotValidException` happens, run this method to handle it.”
+
+When does `MethodArgumentNotValidException` happen?
+
+👉 It happens when you use `@Valid` in your controller,
+and the request body **fails validation** (for example, `@NotBlank` or `@NotNull` fails).
+
+Example:
+
+@PostMapping("/categories")
+public ResponseEntity<?> addCategory(@Valid @RequestBody Category category) {
+    ...
+}
+
+
+If someone sends:
+
+json
+{
+  "categoryName": ""
+}
+
+
+Spring throws a `MethodArgumentNotValidException`.
+And your `@ExceptionHandler` method will catch it.
+
+---
+
+### ⚙️ 3. The method that handles the exception
+
+java
+public ResponseEntity<Map<String, String>> myMethodArgumentNotValidException(MethodArgumentNotValidException e)
+
+
+This method:
+
+* Receives the exception (`e`)
+* Creates a `Map` to store field names and error messages
+* Returns that map inside a `ResponseEntity` (a proper HTTP response)
+
+---
+
+### 📦 4. Inside the method
+
+Let’s go line by line 👇
+
+Map<String, String> response = new HashMap<>();
+
+👉 Creates an empty map to store errors like:
+
+json
+{
+  "categoryName": "Category name cannot be blank"
+}
+
+---
+
+e.getBindingResult().getAllErrors().forEach(err -> {
+    String fieldName = ((FieldError) err).getField();
+    String message = err.getDefaultMessage();
+
+    response.put(fieldName, message);
+});
+
+
+Here’s what this means:
+
+* `e.getBindingResult()` → Gets all the validation results (success + errors).
+* `.getAllErrors()` → Returns only the errors (failed validations).
+* `.forEach(err -> {...})` → Loops through each error.
+
+Inside the loop:
+
+* `((FieldError) err).getField()` → Gets which field caused the error (like `categoryName`).
+* `err.getDefaultMessage()` → Gets the error message (like `"Category name cannot be blank"`).
+* `response.put(fieldName, message)` → Adds it to the map.
+
+✅ Summary for : ((FieldError) err).getField()
+
+getAllErrors() → gives you generic error objects (ObjectError)
+FieldError → special subclass with getField() method
+((FieldError) err) → casting needed to use that method
+
+After this loop, your `response` map looks like this:
+
+java
+{
+  "categoryName" : "Category name cannot be blank"
+}
+
+
+---
+
+### 📤 5. Returning the response
+
+java
+return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+
+This means:
+
+> Send the `response` map as the body
+> and set the HTTP status code to **400 Bad Request**
+
+So the user gets a nice clean JSON like:
+
+json
+{
+  "categoryName": "Category name cannot be blank"
+}
+
+
+instead of a messy error page.
+
+---
+
+## 🧾 Summary Table
+
+| Annotation / Method                                        | Purpose                                         | In Simple Words                         |
+| ---------------------------------------------------------- | ----------------------------------------------- | --------------------------------------- |
+| `@RestControllerAdvice`                                    | Makes this class handle exceptions globally     | “Catch errors from anywhere in the app” |
+| `@ExceptionHandler(MethodArgumentNotValidException.class)` | Tells which exception this method should handle | “If validation fails, run this method”  |
+| `MethodArgumentNotValidException`                          | Exception thrown when `@Valid` fails            | “User sent bad data”                    |
+| `e.getBindingResult().getAllErrors()`                      | Gets all validation error details               | “Collects all the failed rules”         |
+| `(FieldError) err`                                         | Helps to get the field name that failed         | “Which input field was wrong”           |
+| `err.getDefaultMessage()`                                  | Gets the error message from validation          | “What was the problem”                  |
+| `ResponseEntity<>(response, HttpStatus.BAD_REQUEST)`       | Sends the map as JSON with status 400           | “Send clean error back to the user”     |
+
+---
+
+## 🧠 Simple Example Flow
+
+1. User sends invalid data:
+
+   json
+   {
+     "categoryName": ""
+   }
+   
+
+2. `@Valid` throws `MethodArgumentNotValidException`
+
+3. Spring sends it to your global handler (`MyGlobalExceptionHandler`)
+
+4. Your handler collects all field errors and messages.
+
+5. Response sent back:
+
+   json
+   {
+     "categoryName": "Category name cannot be blank"
+   }
+   
+
+---
+
+### 🎯 TL;DR (in one line)
+
+> `@RestControllerAdvice` + `@ExceptionHandler` =
+> “A central place where you can catch exceptions and return nice JSON errors.”
+
+---
+
+Would you like me to show how you can **add more exception handlers** here (like for `ResourceNotFoundException`, `NullPointerException`, etc.) to make it a *complete* global handler class?

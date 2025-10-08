@@ -1,0 +1,53 @@
+🔹 What is @RequestMapping?
+-----> It is an annotation in Spring used to map HTTP requests (URLs) to specific controller methods.
+-----> You put it on a class or method to tell Spring:
+    👉 “When a request comes to this URL, run this method.”
+
+🟢 Example
+
+@RestController
+@RequestMapping("/users") // Base URL for all methods in this class
+public class UserController {
+
+    @RequestMapping("/hello")
+    public String sayHello() {
+        return "Hello User!";
+    }
+}
+
+🔹 HTTP Method Types
+
+By default, @RequestMapping works for all HTTP methods (GET, POST, PUT, etc.).
+But usually we restrict it with method = ....
+
+🟢 Example
+
+@RequestMapping(value = "/getUser", method = RequestMethod.GET)
+public String getUser() {
+    return "This is a GET request";
+}
+
+@RequestMapping(value = "/createUser", method = RequestMethod.POST)
+public String createUser() {
+    return "This is a POST request";
+}
+
+🔹 Shortcuts for Simplicity
+
+----> Because writing method = RequestMethod.GET every time is long, Spring gives shortcuts:
+----> @GetMapping("/path") → Shortcut for @RequestMapping(method = GET)
+----> @PostMapping("/path") → Shortcut for @RequestMapping(method = POST)\
+----> @PutMapping, @DeleteMapping, @PatchMapping → Similar shortcuts
+
+
+✅ If this is written on top of any controller like this
+
+@RequestMapping("/api")
+@RestController
+
+class{
+
+}
+
+It simply means that all the url request of this class will start from /api. You don't need to write in again and again
+for all RequestMethods like GetMapping, PostMapping etc

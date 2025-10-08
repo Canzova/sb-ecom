@@ -1,0 +1,23 @@
+💡 What is @Valid?
+
+@Valid is a Spring Boot annotation that tells Spring:
+
+“Hey, before you use this object, first check if it’s valid according to the rules I defined.”
+
+It comes from Hibernate Validator package/dependency. Just need to add it first in your pom.xml file from start.spring.io
+
+
+Those “rules” are the validation annotations you put in your model class —
+like @NotBlank, @NotNull, @Email, @Min, etc.
+
+⚙️ Where do you use it?
+
+You usually put @Valid before a @RequestBody in your controller.
+
+Example 👇
+
+@PostMapping("/categories")
+public ResponseEntity<String> addCategory(@Valid @RequestBody Category category) {
+    // This code runs only if the object passes all validation checks
+    return ResponseEntity.ok("Category added successfully!");
+}

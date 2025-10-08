@@ -1,0 +1,16 @@
+💡 Why do we need a no-arg constructor in a JPA entity?
+
+When you use Spring Boot + JPA (Hibernate),
+JPA is the part that talks to your database — it saves and loads objects (entities).
+
+Now, when JPA loads data from the database, it has to create an empty object first,
+and then fill in the data (like setting id, name, etc.).
+
+To do that, it needs a way to say:
+
+“Hey, make me a new empty Category object!”
+
+And the only way it can do that is by calling a constructor with no arguments.
+
+That’s why every entity needs a no-argument constructor —
+so JPA can create objects from database rows.
