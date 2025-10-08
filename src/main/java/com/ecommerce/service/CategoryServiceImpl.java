@@ -1,40 +1,45 @@
 package com.ecommerce.service;
 
+import com.ecommerce.exceptions.APIException;
+import com.ecommerce.exceptions.ResourceNotFoundException;
 import com.ecommerce.model.Category;
 import com.ecommerce.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService{
-
-//    private List<Category> categories = new ArrayList<>();
-    //private Long categoryId = 1L;
 
     @Autowired
     CategoryRepository categoryRepository;
 
     @Override
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        List<Category>allCategories = categoryRepository.findAll();
+        if(allCategories.isEmpty()) throw new APIException("No Category created till now.");
+        return allCategories;
     }
 
     @Override
     public void createCategory(Category category) {
-        //category.setCategoryId(categoryId++);
+        String categoryName = category.getCategoryName().toLowerCase();
+
+        // This category is already present
+        if(categoryRepository.findByCategoryName(categoryName).isPresent()){
+            throw new APIException("Category with this name already exists.");
+        }
+
+        // Convert into lower case so that when user enter the same category with different case it can be found in the db
+        category.setCategoryName(categoryName);
         categoryRepository.save(category); // Save into my table
     }
 
     @Override
     public String deleteCategory(Long categoryId) {
         Category existingCategory = categoryRepository.findById(categoryId)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."));
+                .orElseThrow(()-> new ResourceNotFoundException("Category", "id",categoryId));
 
         categoryRepository.delete(existingCategory); // Deleting row directly into table
         //categoryRepository.deleteById(categoryId);
@@ -44,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService{
     @Override
     public String updateCategory(Category updatedCategory, Long categoryId) {
         Category savedCategory = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id",categoryId));
         /*
         🧠 Why:
         This ensures that when you save it, JPA understands you are updating the existing entity (not inserting a new one).
