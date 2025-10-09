@@ -1,0 +1,18 @@
+🧩 What is AppConfig in Java Spring?
+
+In Spring Framework, AppConfig is a configuration class —
+a Java class that tells Spring how to create and manage your beans (objects).
+
+
+🏷️ @Configuration
+
+---> Marks the class as a Spring configuration class.
+---> Similar to a modern replacement for applicationContext.xml (old XML-based configuration).
+---> Spring will scan this class and register all the beans you define with @Bean methods.
+
+🏷️ @Bean
+
+---> Marks a method that returns an object Spring should manage.
+---> Spring will call that method and store the returned object in its Application Context (Spring’s “container”).
+
+Then you can inject (use) those beans anywhere in your app with @Autowired or constructor injection.

@@ -1,0 +1,49 @@
+🚗 Imagine This Scenario
+
+You have a database entity (your internal model):
+
+@Entity
+public class Category {
+    private Long id;
+    private String name;
+}
+
+
+And you also have a DTO — a simplified version for the user:
+
+public class CategoryDTO {
+    private Long categoryId;
+    private String categoryName;
+}
+
+
+Now you want to convert between them:
+
+---> When you read data from DB → convert Category → CategoryDTO
+---> When you save data from client → convert CategoryDTO → Category
+
+You could do this manually every time:
+
+CategoryDTO dto = new CategoryDTO();
+dto.setCategoryId(category.getId());
+dto.setCategoryName(category.getName());
+
+
+But that’s boring 😴 and repetitive — imagine doing it for 50 classes.
+
+⚙️ What ModelMapper Does
+
+ModelMapper automates that conversion.
+You just tell it which two classes to map, and it copies the matching fields automatically.
+
+Example:
+
+ModelMapper modelMapper = new ModelMapper();
+CategoryDTO dto = modelMapper.map(category, CategoryDTO.class);
+
+
+That’s it! 🎉
+
+-----------------------------------------------------------------------------------------------------------------------
+
+You need to add this dependency into your pom.xml, from the official website of model mapper.

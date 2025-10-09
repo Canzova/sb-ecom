@@ -1,0 +1,39 @@
+🧠 1. DTO Purpose Recap
+
+A DTO is simply a data container used to move data between layers —
+like between the controller and the service.
+
+You can think of it like a "safe copy" of your entity, showing only what the client needs.
+
+
+
+🧱 2. So Why Do We Sometimes Add a “Response” Wrapper?
+
+In many real-world APIs, you don’t just send raw data;
+you also send metadata, like pagination info, total records, success status, etc.
+
+Example:
+
+{
+  "content": [
+    { "categoryId": 1, "categoryName": "Electronics" },
+    { "categoryId": 2, "categoryName": "Fashion" }
+  ],
+  "pageNumber": 0,
+  "pageSize": 10,
+  "totalElements": 2,
+  "totalPages": 1,
+  "lastPage": true
+}
+
+
+That’s when we create a response wrapper class, e.g.:
+
+public class CategoryResponse {
+    private List<CategoryDTO> content;
+    private int pageNumber;
+    private int pageSize;
+    private long totalElements;
+    private int totalPages;
+    private boolean lastPage;
+}
