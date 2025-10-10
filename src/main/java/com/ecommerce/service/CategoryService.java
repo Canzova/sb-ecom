@@ -7,7 +7,7 @@ import com.ecommerce.payload.CategoryResponse;
 
 
 public interface CategoryService {
-    public CategoryResponse getAllCategories();
+    CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize);
     CategoryDTO createCategory(CategoryDTO categoryDto);
 
     CategoryDTO deleteCategory(Long categoryId);

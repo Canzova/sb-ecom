@@ -1,0 +1,191 @@
+COMPLETE GUIDE TO @RequestParam IN SPRING BOOT
+==============================================
+
+1. WHAT IS @RequestParam?
+-------------------------
+@RequestParam is used in Spring MVC to extract query parameters, form data, or HTTP request parameters
+from a URL or form submission.
+
+Example:
+    http://localhost:8080/hello?name=John
+Here, 'name' is a request parameter.
+
+
+2. WHY DO WE USE @RequestParam?
+-------------------------------
+Because it allows us to automatically capture parameters from a URL or form submission
+into our controller method parameters without manual parsing.
+
+
+3. BASIC SYNTAX
+---------------
+@GetMapping("/hello")
+public String sayHello(@RequestParam String name) {
+    return "Hello, " + name;
+}
+
+Example URL:
+    http://localhost:8080/hello?name=John
+Output:
+    Hello, John
+
+
+4. FULL SYNTAX (ALL PARAMETERS)
+-------------------------------
+@RequestParam(
+    value = "paramName",     // name of the parameter in the URL/form
+    required = true,         // whether it must be present
+    defaultValue = "value"   // fallback if not provided
+)
+
+
+5. PARAMETERS EXPLAINED
+------------------------
+value (or name): Name of the parameter in the request
+required: Makes the parameter mandatory (true by default)
+defaultValue: Fallback value if not provided
+
+
+6. EXAMPLES
+-----------
+Example 1: Simple Required Parameter
+------------------------------------
+@GetMapping("/greet")
+public String greet(@RequestParam String name) {
+    return "Hello, " + name;
+}
+URL: /greet?name=John
+Output: Hello, John
+
+
+Example 2: Optional Parameter
+-----------------------------
+@GetMapping("/greet")
+public String greet(@RequestParam(required = false) String name) {
+    return "Hello, " + (name != null ? name : "Guest");
+}
+URL: /greet
+Output: Hello, Guest
+
+
+Example 3: Using Default Value
+------------------------------
+@GetMapping("/greet")
+public String greet(@RequestParam(defaultValue = "Guest") String name) {
+    return "Hello, " + name;
+}
+URL: /greet
+Output: Hello, Guest
+
+
+Example 4: Multiple Parameters
+------------------------------
+@GetMapping("/add")
+public String add(@RequestParam int a, @RequestParam int b) {
+    return "Sum: " + (a + b);
+}
+URL: /add?a=5&b=10
+Output: Sum: 15
+
+
+Example 5: Different Variable Name
+----------------------------------
+@GetMapping("/welcome")
+public String welcome(@RequestParam("user") String username) {
+    return "Welcome, " + username;
+}
+URL: /welcome?user=Emma
+Output: Welcome, Emma
+
+
+Example 6: List or Array Parameters
+-----------------------------------
+@GetMapping("/ids")
+public String getIds(@RequestParam List<Integer> id) {
+    return "IDs: " + id;
+}
+URL: /ids?id=1&id=2&id=3
+Output: IDs: [1, 2, 3]
+
+
+Example 7: With POST Request (Form Data)
+----------------------------------------
+@PostMapping("/submit")
+public String submitForm(@RequestParam String username, @RequestParam String email) {
+    return "Submitted: " + username + ", " + email;
+}
+
+
+7. WHEN TO USE @RequestParam
+----------------------------
+Use @RequestParam when you need:
+- Query string parameters (e.g. /search?keyword=laptop&page=2)
+- Form data parameters (e.g. <input name="username">)
+- Simple scalar values (strings, numbers, booleans)
+- Optional input fields (using required=false or defaultValue)
+
+
+8. WHEN NOT TO USE @RequestParam
+--------------------------------
+Use something else when:
+- You have many parameters that form an object → Use @ModelAttribute or @RequestBody
+- You’re sending JSON in the body → Use @RequestBody
+- You’re reading variables from the URL path (like /users/1) → Use @PathVariable
+
+
+9. DIFFERENCE BETWEEN COMMON ANNOTATIONS
+----------------------------------------
+@RequestParam  → Query string or form data (/search?name=John)
+@PathVariable  → Path data (/users/123)
+@RequestBody   → JSON request body ({ "name": "John" })
+@ModelAttribute → Form data mapped to an object
+
+
+10. DEFAULT TYPE CONVERSION
+---------------------------
+Spring automatically converts parameter types.
+
+Example:
+@GetMapping("/multiply")
+public String multiply(@RequestParam int x, @RequestParam double y) {
+    return "Result: " + (x * y);
+}
+URL: /multiply?x=4&y=2.5
+Output: Result: 10.0
+
+
+11. SUMMARY TABLE
+-----------------
+Feature         | Description                     | Default
+------------------------------------------------------------
+Required        | Parameter must be present        | true
+Default Value   | Used when not present            | ""
+Source          | Query string / form              | -
+Supports List   | Yes (List or Array)              | Yes
+Type Conversion | Automatic                        | Yes
+
+
+12. COMBINED EXAMPLE
+--------------------
+@GetMapping("/user/{id}")
+public String getUser(
+    @PathVariable int id,
+    @RequestParam(defaultValue = "active") String status
+) {
+    return "User ID: " + id + ", Status: " + status;
+}
+
+URL: /user/101?status=inactive
+Output: User ID: 101, Status: inactive
+
+
+13. FINAL SUMMARY
+-----------------
+@RequestParam pulls values from URL query parameters or form data
+and binds them to controller method parameters.
+
+Shortcut to remember:
+@RequestParam = Data from URL or Form
+@PathVariable = Data from URL Path
+@RequestBody = Data from JSON Body
+@ModelAttribute = Data from Form mapped to Object

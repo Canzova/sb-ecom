@@ -1,0 +1,133 @@
+🔥 WHY STRING DEFAULT VALUE WORKS WITH INTEGER IN @RequestParam 🔥
+=================================================================
+
+🧩 The Code Example
+-------------------
+public ResponseEntity<CategoryResponse> getAllCategories(
+    @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+    @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize
+)
+
+package com.ecommerce.config;
+public class AppConstants {
+    public static final String PAGE_NUMBER = "0";
+    public static final String PAGE_SIZE = "10";
+}
+
+---
+
+💡 Question
+------------
+"If my `pageNumber` parameter is an Integer,
+and the default value (`AppConstants.PAGE_NUMBER`) is a String (“0”),
+why doesn’t this cause a type error?"
+
+---
+
+✅ Short Answer
+---------------
+Because Spring Boot automatically converts **String values** (from the URL or defaultValue--->(Parameter in RequestParam))
+into the type of the parameter you declared — in this case, Integer. 🪄
+
+---
+
+🧠 Detailed Explanation
+=======================
+
+1️⃣ @RequestParam Always Reads from the URL as Text
+---------------------------------------------------
+When you call:
+    GET /categories?pageNumber=2&pageSize=5
+
+Everything in the URL is text:
+    "2" and "5"
+
+So `@RequestParam` starts with **String values**.
+
+---
+
+2️⃣ Spring Boot Converts It Automatically
+-----------------------------------------
+Spring has a built-in **type conversion system**.
+When you write:
+    @RequestParam Integer pageNumber
+
+Spring sees:
+- “I got a string from the request (like "2")”
+- “But the developer wants an Integer”
+- So it does: Integer.valueOf("2")
+
+✅ No error!
+
+---
+
+3️⃣ The Same Logic Applies to `defaultValue`
+--------------------------------------------
+Even the `defaultValue` in `@RequestParam` is always a **String**.
+Its definition is literally:
+    String defaultValue() default ValueConstants.DEFAULT_NONE;
+
+So this:
+    @RequestParam(defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber
+
+is **perfectly valid**, because defaultValue must be a String.
+Spring will convert "0" → 0 automatically.
+
+---
+
+⚙️ What Happens Internally
+--------------------------
+1. You call `/categories` without query params.
+2. Spring sees no `pageNumber` or `pageSize`.
+3. It uses the default values: "0" and "10".
+4. It checks your parameter types (Integer).
+5. Converts them: "0" → 0, "10" → 10.
+6. Invokes your method:
+       getAllCategories(0, 10);
+
+✅ Works fine, no errors.
+
+---
+
+💡 In Short
+============
+| Concept            | Explanation                                   |
+|--------------------|-----------------------------------------------|
+| Request params     | Always come as Strings from URL               |
+| defaultValue       | Must always be a String                       |
+| Parameter type     | Can be Integer, Boolean, Double, etc.         |
+| Why it works       | Spring automatically converts the value type  |
+
+---
+
+🧾 Example Proof
+----------------
+@GetMapping("/test")
+public String test(
+    @RequestParam(defaultValue = "123") Integer num,
+    @RequestParam(defaultValue = "true") Boolean flag
+) {
+    return "num=" + num + ", flag=" + flag;
+}
+
+Call `/test` ➜ Output:
+    num=123, flag=true
+
+✅ Even though both default values were Strings!
+
+---
+
+🎯 Final Answer
+===============
+Your code works because:
+- `@RequestParam` and its `defaultValue` always deal with Strings.
+- Spring Boot automatically converts those Strings into the declared type (like Integer).
+
+---
+
+✅ TL;DR
+========
+- "0" and "10" → Strings ✔️
+- @RequestParam defaultValue → String ✔️
+- Spring converts them → Integer ✔️
+- That’s why no error occurs 🚀

@@ -1,6 +1,6 @@
 package com.ecommerce.controller;
 
-import com.ecommerce.model.Category;
+import com.ecommerce.config.AppConstants;
 import com.ecommerce.payload.CategoryDTO;
 import com.ecommerce.payload.CategoryResponse;
 import com.ecommerce.service.CategoryServiceImpl;
@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -34,15 +32,15 @@ public class CategoryController {
 
     @GetMapping("/public/categories")
     // @RequestMapping(value = "/public/categories", method = RequestMethod.GET)
-    public ResponseEntity<CategoryResponse>getAllCategories(){
-        CategoryResponse categoryResponse = categoryService.getAllCategories();
+    public ResponseEntity<CategoryResponse>getAllCategories(@RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+                                                            @RequestParam (name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize){
+        CategoryResponse categoryResponse = categoryService.getAllCategories(pageNumber, pageSize);
         return ResponseEntity.ok(categoryResponse);
     }
 
     @PostMapping("/public/categories")
     public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDto){
         CategoryDTO savedcategoryDto = categoryService.createCategory(categoryDto);
-        String res = "category added Successfully !";
         return ResponseEntity.status(HttpStatus.CREATED).body(savedcategoryDto);
     }
 
