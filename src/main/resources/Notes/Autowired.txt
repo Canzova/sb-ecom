@@ -1,0 +1,54 @@
+@AUTOWIRED IN SPRING BOOT
+--------------------------
+
+1. PURPOSE:
+   - Automatically injects dependencies between Spring-managed beans.
+   - Helps avoid manual object creation using 'new'.
+
+2. REQUIREMENT:
+   - Works only on Spring-managed beans (classes annotated with @Component, @Service, @Repository, or @Controller).
+
+3. HOW IT WORKS:
+   - Spring scans for classes and creates beans.
+   - When it finds @Autowired, it injects the matching bean automatically by type.
+
+4. PLACES YOU CAN USE @Autowired:
+   - On constructors (recommended)
+   - On fields
+   - On setter methods
+
+5. EXAMPLES:
+
+   a) Constructor Injection (best practice)
+      @Service
+      public class UserService {
+          private final UserRepository userRepo;
+
+          @Autowired
+          public UserService(UserRepository userRepo) {
+              this.userRepo = userRepo;
+          }
+      }
+
+   b) Field Injection
+      @Autowired
+      private UserRepository userRepo;
+
+   c) Setter Injection
+      private UserRepository userRepo;
+
+      @Autowired
+      public void setUserRepo(UserRepository userRepo) {
+          this.userRepo = userRepo;
+      }
+
+6. NOTES:
+   - Works by type first, then by name if multiple beans exist.
+   - Use @Qualifier("beanName") to specify which bean to inject.
+   - You CANNOT use @Autowired in a non-bean class (not managed by Spring).
+   - If dependency is optional, use @Autowired(required = false).
+
+7. BEST PRACTICES:
+   - Prefer constructor injection for immutability and easier testing.
+   - Avoid field injection unless necessary.
+   - Always ensure dependencies are Spring beans.

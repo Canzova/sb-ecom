@@ -235,6 +235,18 @@ JSON Output Example:
 
 ------------------------------------------------------------
 
+// Advance : How to sort any per user request. Get the details of sortOrder and SortBy from user and sort it
+
+----> sortOrder and sortBy we are getting from user in RequestParam
+----> sortOrder = ascending or descending
+----> sortBy = A field value, on basis of which you want to do sorting
+
+Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ?
+                Sort.by(sortBy).ascending():
+                Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+
 📋 SUMMARY TABLE
 ================
 
