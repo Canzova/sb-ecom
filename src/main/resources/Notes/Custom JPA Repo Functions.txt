@@ -1,0 +1,127 @@
+🎯 SPRING DATA JPA — Custom Repository Methods Explained
+==========================================================
+
+Hey developer 👋 — let’s master how to write expressive, no-SQL-needed methods
+in your Spring Data JPA repositories!
+
+----------------------------------------------------------
+🔍 Example You Asked About
+----------------------------------------------------------
+
+productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%');
+
+💡 What it does:
+────────────────
+Finds **all products** whose names contain the given `keyword`, ignoring case.
+
+✅ It translates to SQL like:
+
+    SELECT * FROM product
+    WHERE LOWER(product_name) LIKE LOWER('%keyword%');
+
+So if `keyword = "phone"`, it matches:
+→ "Smartphone"
+→ "PHONE"
+→ "Gaming Phone"
+→ "phone case"
+
+----------------------------------------------------------
+🧩 How It Works Step-by-Step
+----------------------------------------------------------
+
+1️⃣ **findAllBy**
+   ⇒ Tells Spring: “Find all records where...”
+
+2️⃣ **ProductName**
+   ⇒ Refers to the field in your `Product` entity.
+
+3️⃣ **Like**
+   ⇒ Uses SQL’s `LIKE` operator for pattern matching (`%` = wildcard).
+
+4️⃣ **IgnoreCase**
+   ⇒ Makes the match case-insensitive.
+
+Result → `List<Product>` that matches your keyword pattern 🎉
+
+----------------------------------------------------------
+💡 Common Query Keywords
+----------------------------------------------------------
+
+| Keyword           | Meaning                     | Example                                      |
+|-------------------|-----------------------------|----------------------------------------------|
+| findBy            | Select records              | findByPrice()                                |
+| findAllBy         | Select multiple records     | findAllByCategory()                          |
+| And / Or          | Combine conditions          | findByPriceLessThanAndQuantityGreaterThan()  |
+| Like              | Pattern matching            | findByProductNameLike()                      |
+| Containing        | Like '%keyword%'            | findByProductNameContaining()                |
+| StartsWith        | Like 'keyword%'             | findByProductNameStartsWith("Sam")           |
+| EndsWith          | Like '%keyword'             | findByProductNameEndsWith("Pro")             |
+| IgnoreCase        | Case insensitive            | findByProductNameIgnoreCase()                |
+| Between           | Range                       | findByPriceBetween(100.0, 500.0)             |
+| OrderBy           | Sorting                     | findByCategoryOrderByPriceDesc()             |
+
+----------------------------------------------------------
+🛠️ Writing Custom Query Methods
+----------------------------------------------------------
+
+Follow the naming rule:
+    findBy<FieldName><Operator>(parameters)
+
+Examples:
+    🔹 List<Product> findByPriceLessThan(Double price);
+    🔹 List<Product> findByCategoryCategoryNameAndPriceLessThan(String category, Double price);
+    🔹 List<Product> findByProductNameContainingIgnoreCase(String keyword);
+
+👉 Spring builds the SQL automatically — no manual queries needed!
+
+----------------------------------------------------------
+🚀 When You Need More Power
+----------------------------------------------------------
+
+If you need a complex query → use `@Query`:
+
+    @Query("SELECT p FROM Product p WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Product> searchProducts(@Param("keyword") String keyword);
+
+Then call:
+    productRepository.searchProducts("phone");
+
+----------------------------------------------------------
+✅ TL;DR Summary
+----------------------------------------------------------
+
+| Concept | Example | Description |
+|----------|----------|--------------|
+| Derived Query | findAllByProductNameLikeIgnoreCase("%" + keyword + "%") | Finds products with names containing `keyword` |
+| SQL Generation | ✅ | Spring auto-generates the query |
+| Simplicity | ✅ | No SQL writing needed |
+| Advanced Use | @Query | For complex joins & custom filters |
+
+----------------------------------------------------------
+🚀 Quick Tip:
+----------------------------------------------------------
+Use **Containing** instead of `Like` for cleaner code:
+
+    findByProductNameContainingIgnoreCase(keyword)
+
+(Spring automatically wraps `%keyword%` for you!)
+
+----------------------------------------------------------
+Happy Coding 💻
+----------------------------------------------------------
+
+💡 Why it must be LikeIgnoreCase and not IgnoreCaseLike
+
+Spring Data builds your query by reading from left to right:
+
+findAllBy [FieldName] [Operator] [Modifier]
+
+
+So:
+
+Like is the operator (defines how to compare)
+
+IgnoreCase is a modifier (how to compare, case-insensitive)
+
+✅ LikeIgnoreCase → ✅ understood
+❌ IgnoreCaseLike → ❌ invalid syntax

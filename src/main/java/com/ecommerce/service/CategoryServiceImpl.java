@@ -83,7 +83,7 @@ public class CategoryServiceImpl implements CategoryService{
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id",categoryId));
 
         Category updatedCategory = modelMapper.map(categoryDto, Category.class);
-        // Before saving just change the category name into lowercase. Beause in our db we are storing the categoryNames
+        // Before saving just change the category name into lowercase. Because in our db we are storing the categoryNames
         // in lowercase only
 
         updatedCategory.setCategoryName(updatedCategory.getCategoryName().toLowerCase());
