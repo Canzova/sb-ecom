@@ -1,0 +1,38 @@
+
+            ➡️ It takes the uploaded image file from memory and writes it to your server’s disk at the location given by filePath.
+
+            2️⃣ file.getInputStream()
+            This gives you an InputStream to read the bytes of the uploaded file.
+
+            Think of it like:
+            “I’m opening a pipe to read the raw image data that the user sent.”
+            You can use this stream to read the image’s contents one byte at a time.
+
+            3️⃣ Paths.get(filePath)
+
+            Paths.get(...) creates a Path object (from java.nio.file.Path) that represents a file or folder location in your system.
+
+            For example:
+            Paths.get("images/abc.jpg")
+            represents → /your_project_root/images/abc.jpg
+
+            So now you have a target destination on disk.
+
+            4️⃣ Files.copy(...)
+
+            This is a utility method from Java’s java.nio.file.Files class.
+            It’s used to copy data from a source (like an InputStream or another file) to a target path.
+
+            Its syntax:
+            Files.copy(InputStream source, Path target, CopyOption... options)
+
+            So in your code:
+
+            source → file.getInputStream() (the uploaded image)
+            target → Paths.get(filePath) (the place on your disk to save it)
+
+            Hence:
+            Files.copy(file.getInputStream(), Paths.get(filePath));
+
+            literally means:
+            "Take the uploaded image bytes from memory and write them into a file at this location on the server."
