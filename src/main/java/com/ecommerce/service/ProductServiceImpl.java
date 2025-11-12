@@ -78,12 +78,12 @@ public class ProductServiceImpl implements ProductService{
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Product> productPage = productRepository.findAll(pageDetails);
 
-        List<Product>products = productPage.getContent();
+        List<Product>productList = productPage.getContent();
 
-        if(products.isEmpty()) throw new APIException("No Products added till now.");
+        if(productList.isEmpty()) throw new APIException("No Products added till now.");
 
         // List<Product> products = productRepository.findAll();
-        List<ProductDTO>productDTOS = products.stream()
+        List<ProductDTO>productDTOS = productList.stream()
                 .map(product-> modelMapper.map(product, ProductDTO.class))
                 .toList();
 
@@ -106,9 +106,11 @@ public class ProductServiceImpl implements ProductService{
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Product> productPage = productRepository.findByCategory(category, pageDetails);
 
-        if(productPage.isEmpty()) throw new APIException("Products Not Found.");
+        List<Product>productList = productPage.getContent();
 
-        List<ProductDTO>productDTOS = productPage.stream()
+        if(productList.isEmpty()) throw new APIException("Products Not Found.");
+
+        List<ProductDTO>productDTOS = productList.stream()
                 .map(product-> modelMapper.map(product, ProductDTO.class))
                 .toList();
 
@@ -127,9 +129,11 @@ public class ProductServiceImpl implements ProductService{
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Product> productPage = productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%', pageDetails);
 
-        if(productPage.isEmpty()) throw new APIException("Products Not Found.");
+        List<Product>productList = productPage.getContent();
 
-        List<ProductDTO>productDTOs = productPage.stream()
+        if(productList.isEmpty()) throw new APIException("Products Not Found.");
+
+        List<ProductDTO>productDTOs = productList.stream()
                 .map((product)-> modelMapper.map(product, ProductDTO.class))
                 .toList();
 
