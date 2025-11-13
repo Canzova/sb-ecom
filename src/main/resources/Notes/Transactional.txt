@@ -1,0 +1,109 @@
+═══════════════════════════════════════════════════════════════════════════════
+💡 WHAT IS @Transactional (Simple Explanation)
+═══════════════════════════════════════════════════════════════════════════════
+
+👉 In one line:
+──────────────────────────────
+@Transactional makes sure that all the database work inside that method happens
+as one single, safe transaction —
+✅ either everything succeeds
+❌ or everything rolls back if something fails.
+
+
+🧩 Example:
+──────────────────────────────
+@Override
+@Transactional
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    User user = userRepository.findByUserName(username)
+        .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+    return UserDetailsImpl.build(user);
+}
+
+
+🧠 You might think:
+──────────────────────────────
+“But we are only READING the user, not saving or updating anything —
+so why do we need @Transactional?”
+
+Good question 👇
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1️⃣ BECAUSE OF LAZY LOADING
+═══════════════════════════════════════════════════════════════════════════════
+
+If your `User` entity has relationships like roles, products, etc. that are
+marked as LAZY (fetch = FetchType.LAZY),
+then JPA does NOT immediately fetch them from the database.
+
+Example:
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<Role> roles;
+
+So when you call:
+    userRepository.findByUserName(username);
+
+it might only fetch the main user data — not the roles yet.
+
+When you later access:
+    user.getRoles();
+
+JPA needs an OPEN DATABASE SESSION to fetch those roles.
+
+✅ @Transactional keeps that session open during the method.
+❌ Without it, you’ll get this error:
+   LazyInitializationException: could not initialize proxy - no Session
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2️⃣ ENSURES CONSISTENCY
+═══════════════════════════════════════════════════════════════════════════════
+
+Even for READ operations, marking a method as transactional ensures that:
+- You see a consistent snapshot of the database.
+- No half-updated or inconsistent data if another thread is changing data.
+
+Think of it as:
+> “Lock the view of the DB for this method so I see stable data.”
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3️⃣ WHEN TO USE @Transactional
+═══════════════════════════════════════════════════════════════════════════════
+
+| Situation | Should You Use It? | Why |
+|------------|-------------------|------|
+| 🔹 Saving, updating, or deleting data | ✅ YES | You want all DB changes to succeed or fail together |
+| 🔹 Reading data with lazy-loaded relationships | ✅ YES | Keeps session open for lazy loading |
+| 🔹 Reading only simple fields | ❌ NO | No lazy data, no multiple queries |
+| 🔹 In Service layer | ✅ YES | Ensures atomicity for business logic |
+| 🔹 In Controller | ❌ NO | Controller should not handle transactions |
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4️⃣ SIMPLE ANALOGY 🧠
+═══════════════════════════════════════════════════════════════════════════════
+
+Think of @Transactional like a 🛒 SHOPPING CART CHECKOUT.
+
+- You scan multiple items → (multiple DB operations)
+- If payment fails → everything is canceled (rollback)
+- If payment succeeds → all items are bought together (commit)
+
+And during checkout, the cart stays “open” —
+just like your database session during a transaction.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+✅ SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+✔ Keeps the database session open (important for lazy fields)
+✔ Ensures all operations in the method run as ONE safe transaction
+✔ Usually used in the Service layer
+
+In short:
+> @Transactional = “Do all DB work together, or none at all.”
+═══════════════════════════════════════════════════════════════════════════════

@@ -5,32 +5,39 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-@Table(name="users")
+@Table(name="users",
+        uniqueConstraints = {
+        @UniqueConstraint(columnNames = "userName"),
+        @UniqueConstraint(columnNames = "email")
+})
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="user_id")
     private Long userId;
 
     @NotBlank
     @Size(max=20)
+    @Column(name="userName")
     private String userName;
 
     @NotBlank
     @Size(max=50)
     @Email
+    @Column(name="email")
     private String email;
 
     @NotBlank
     @Size(max=120)
+    @Column(name="password")
     private String password;
 
     public User(String userName, String email, String password) {
@@ -47,4 +54,21 @@ public class User {
         inverseJoinColumns = @JoinColumn(name="role_id"))
 
     private Set<Role> roles = new HashSet<>();
+
+    @Getter
+    @Setter
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user",
+        cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+        orphanRemoval = true)
+    private Set<Product> products;
+
+    @Getter
+    @Setter
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            joinColumns = @JoinColumn(name="user_id"),
+            inverseJoinColumns = @JoinColumn(name="address_id")
+    )
+    private List<Address> addressList = new ArrayList<>();
 }
