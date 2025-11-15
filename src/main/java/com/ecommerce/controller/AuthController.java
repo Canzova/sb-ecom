@@ -3,6 +3,7 @@ package com.ecommerce.controller;
 import com.ecommerce.model.AppRole;
 import com.ecommerce.model.Role;
 import com.ecommerce.model.User;
+import com.ecommerce.repository.RoleRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.security.jwt.JwtUtils;
 import com.ecommerce.security.request.LoginRequest;
@@ -26,12 +27,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -79,6 +82,9 @@ public class AuthController {
                 .map(item-> item.getAuthority())
                 .collect(Collectors.toList());
         UserInfoResponse response = new UserInfoResponse(userDetails.getId(), jwtToken, userDetails.getUsername(), roles);
+        System.out.println("AUTHENTICATED USER = " + userDetails);
+        System.out.println("USERNAME FROM DB = " + userDetails.getUsername());
+        System.out.println("ROLES = " + userDetails.getAuthorities());
 
         return new ResponseEntity<UserInfoResponse>(response, HttpStatus.OK);
     }
@@ -102,6 +108,9 @@ public class AuthController {
         Set<String> strRoles = signupRequest.getRoles(); // User in sending in string
         Set<Role>roles= new HashSet<>();                 // In our db we are storing in Role class
 
+        /*
+            Why to use Db for fetching roles.txt
+         */
         if(strRoles == null){
             Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
                     .orElseThrow(()-> new RuntimeException("Error : Role is not defined."));

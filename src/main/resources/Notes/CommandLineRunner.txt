@@ -1,0 +1,87 @@
+┌───────────────────────────────────────────────────────────────────────────┐
+│ ⭐ 1. HOW YOUR CommandLineRunner WORKS (SUPER SIMPLE EXPLANATION)         │
+└───────────────────────────────────────────────────────────────────────────┘
+
+You can write this method in any spring managed class like @Component or @Configuration or @SpringBootApplication
+or initialize it with @Bean
+
+Your method:
+
+    @Bean
+    public CommandLineRunner initData(...)
+
+▶ Runs AUTOMATICALLY **once** when the Spring Boot application starts.
+
+Think of it like:
+👉 “Before the app starts, run this setup code one time.”
+
+It initializes your database with:
+✔ Roles
+✔ Dummy users
+✔ User-role assignments
+
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🚀 STEP-BY-STEP: WHAT EXACTLY YOUR CODE DOES                              │
+└───────────────────────────────────────────────────────────────────────────┘
+
+1️⃣ **Create roles if they do not exist**
+   - ROLE_USER
+   - ROLE_SELLER
+   - ROLE_ADMIN
+
+   Uses:
+   roleRepository.findByRoleName(...)
+   If missing → save it.
+
+2️⃣ **Create dummy users if not present**
+   - user1
+   - seller1
+   - admin
+
+3️⃣ **Assign roles to each user**
+   - user1 → ROLE_USER
+   - seller1 → ROLE_SELLER
+   - admin → ALL ROLES
+
+✅ Result: Database is ALWAYS initialized properly—even an empty DB becomes ready.
+
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🌟 2. WHERE & WHEN YOU SHOULD USE CommandLineRunner                        │
+└───────────────────────────────────────────────────────────────────────────┘
+
+You use it when you want to run code AUTOMATICALLY on startup.
+
+Below are the best real-world use cases:
+
+🔹 **Use Case 1: Initialize Roles in DB**
+    Perfect for roles that never change.
+
+🔹 **Use Case 2: Create Default Admin**
+    Auto-create super admin account.
+
+🔹 **Use Case 3: Insert Default System Settings**
+    Tax %, payment config, file limits, etc.
+
+🔹 **Use Case 4: Add Dummy Data for Testing**
+    Fake users, products, categories, etc.
+
+🔹 **Use Case 5: Run One-Time Startup Logic**
+    Clean temp folders, warm cache, validate configs.
+
+🔹 **Use Case 6: Initialize Master Data**
+    Countries, states, cities, order-status, etc.
+
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🎁 SUPER SIMPLE SUMMARY                                                   │
+└───────────────────────────────────────────────────────────────────────────┘
+
+✔ CommandLineRunner runs ONE TIME at startup
+✔ Perfect for inserting roles, admin user, demo data
+✔ Makes sure DB is never empty or inconsistent
+✔ Saves you from writing SQL manually
+✔ Great for development AND production initialization
+
+

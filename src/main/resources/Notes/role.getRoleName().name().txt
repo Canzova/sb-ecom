@@ -23,7 +23,7 @@ And your Role entity looks like 👇
         private Long id;
 
         @Enumerated(EnumType.STRING)
-        private ERole roleName;
+        private AppRole roleName;
 
         // getters & setters
     }
@@ -33,7 +33,7 @@ And your Role entity looks like 👇
 ───────────────────────────────────────────────
 
 👉 role.getRoleName()
-   - Returns an ENUM constant of type ERole
+   - Returns an ENUM constant of type AppRole
    - Example:
         ERole roleName = role.getRoleName();
         System.out.println(roleName); // prints ROLE_ADMIN
