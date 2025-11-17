@@ -1,0 +1,106 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║            🍪 JWT IN COOKIES — HOW SPRING SECURITY HANDLES IT            ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+🌐 **1. JWT Stored in Cookie → How Spring Knows the User**
+----------------------------------------------------------------------------
+
+Even when using cookies instead of Authorization headers, the flow is the same:
+
+📌 **Browser automatically sends cookies with every request**
+Example:
+    Cookie: jwt=<your-jwt-token>
+
+📌 **Your AuthTokenFilter reads the JWT from the cookie**
+    String jwt = jwtUtils.getJwtFromHeader(request);
+
+📌 **Then:**
+1. Validate JWT
+2. Load user from DB/UserDetailsService
+3. Create Authentication object
+4. Place it inside SecurityContext
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+➡️ **Only after this, Spring knows the user for THAT request.**
+
+----------------------------------------------------------------------------
+
+🔥 **2. Why does the controller receive the Authentication object automatically?**
+----------------------------------------------------------------------------
+
+Because your filter put the Authentication object into the SecurityContext:
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+Then Spring Security injects it here:
+
+    public String currentUserName(Authentication authentication)
+
+Inside this object, Spring now knows:
+- 👤 Username
+- 🔐 Roles
+- 🎫 Authorities
+
+➡️ No need to manually send Authentication.
+➡️ Spring retrieves it from the SecurityContext for you.
+
+----------------------------------------------------------------------------
+
+👥 **3. What if multiple users are logged in using cookies?**
+----------------------------------------------------------------------------
+
+No issue at all.
+
+JWT-based auth is **stateless**, meaning:
+
+✔️ No global login
+✔️ No shared session
+✔️ No server-side tracking
+
+Each browser/device has **its own JWT cookie**:
+
+🧑 User A’s browser → cookie contains JWT for A
+👩 User B’s browser → cookie contains JWT for B
+
+Each request runs in its own thread:
+
+➡️ Own SecurityContext
+➡️ Own Authentication
+➡️ Users do NOT interfere with each other
+
+Even two tabs from the same user:
+- Both send the same JWT cookie
+- Both authenticate the same user
+
+----------------------------------------------------------------------------
+
+🧠 **4. Key Insight**
+----------------------------------------------------------------------------
+
+Cookies **do NOT store login state**.
+They only store the JWT token.
+
+The **server recreates the login state on EVERY request** by:
+
+1. Reading JWT
+2. Validating it
+3. Building Authentication
+4. Filling SecurityContext
+
+Stateless, clean, safe.
+
+----------------------------------------------------------------------------
+
+📝 Summary Table
+----------------------------------------------------------------------------
+
+| What you might think                          | What actually happens               |
+|-----------------------------------------------|-------------------------------------|
+| Cookies store logged-in user state            | ❌ No, only store JWT token         |
+| Spring “remembers” the login                  | ❌ No, stateless — no memory        |
+| Authentication persists across requests       | ❌ No, rebuilt every request        |
+| Filter sets Authentication → Controller uses it | ✔️ Exactly how it works            |
+
+----------------------------------------------------------------------------
+

@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-// Used to user specific data from DB
+// Used to get user specific data from DB
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {

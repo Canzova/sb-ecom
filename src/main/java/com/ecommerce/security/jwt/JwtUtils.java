@@ -4,11 +4,14 @@ import com.ecommerce.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -24,18 +27,57 @@ public class JwtUtils {
     @Value("${spring.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
-    public String getJwtFromHeader(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        logger.debug("Authorization Header: {}", bearerToken);
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // Remove Bearer prefix
+    // Name of the cookie
+    @Value("${spring.ecom.app.jwtCookieName}")
+    private String jwtCookie;
+
+//    public String getJwtFromHeader(HttpServletRequest request) {
+//        String bearerToken = request.getHeader("Authorization");
+//        logger.debug("Authorization Header: {}", bearerToken);
+//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+//            return bearerToken.substring(7); // Remove Bearer prefix
+//        }
+//        return null;
+//    }
+
+    // Getting the Json web token from cookie
+    public String getJwtFromCookies(HttpServletRequest request){
+        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+        System.out.println("Cookie : " + cookie.getValue());
+        if(cookie != null){
+            return cookie.getValue();
         }
+
         return null;
     }
 
+    // When user tries to singing with userName and password, so this method will help in generating the json web token
+    // and it will also wrap it into a cookie and return it.
+    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal){
+        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt)
+                .path("/api")
+                .maxAge(24 * 60 * 60)
+                .httpOnly(false)
+                .build();
 
-    public String generateTokenFromUsername(UserDetailsImpl userDetails) {
-        String username = userDetails.getUsername();
+        return cookie;
+    }
+
+    // When user wants to log out i will set this cookie on browser, so the previous cookie will be overridden
+    // So next time if user tries to login in the browser we will get this clean cookie without any token
+    // So it will not be logged in
+
+    public ResponseCookie generateCleanCookie(){
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, null)
+                .path("/api")
+                .build();
+
+        return cookie;
+    }
+
+    public String generateTokenFromUsername(String username ) {
+//        String username = userDetails.getUsername();
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
@@ -43,6 +85,9 @@ public class JwtUtils {
                 .signWith(key())
                 .compact();
     }
+
+    // When user tries to access any endpoint with jwt/cookie, from this method we get their userName
+    // and send it to authTokenFilter where it authenticates it
 
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser()

@@ -14,7 +14,9 @@ import com.ecommerce.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,10 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,6 +57,7 @@ public class AuthController {
 
         try{
 
+            // Step 1 : Authenticate User
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                             loginRequest.getPassword())
@@ -73,20 +73,27 @@ public class AuthController {
             return new ResponseEntity<Object>(map, HttpStatus.UNAUTHORIZED);
         }
 
+        // Step 2 : USer is authenticated , so now put the authentication request into spring security context
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // Step 3 : Get the user details (Userid, userName, roles and cookie) to send back to user in repsonse
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item-> item.getAuthority())
                 .collect(Collectors.toList());
-        UserInfoResponse response = new UserInfoResponse(userDetails.getId(), jwtToken, userDetails.getUsername(), roles);
+
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), roles);
+
         System.out.println("AUTHENTICATED USER = " + userDetails);
         System.out.println("USERNAME FROM DB = " + userDetails.getUsername());
         System.out.println("ROLES = " + userDetails.getAuthorities());
 
-        return new ResponseEntity<UserInfoResponse>(response, HttpStatus.OK);
+//        return new ResponseEntity<UserInfoResponse>(response, HttpStatus.OK);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                jwtCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/signup")
@@ -147,4 +154,35 @@ public class AuthController {
         userRepository.save(user);
         return new ResponseEntity<>(new MessageResponse("User registered Successfully"), HttpStatus.CREATED);
     }
+
+    @GetMapping("/username")
+    public String currentUserName(Authentication authentication){
+        if(authentication != null) return authentication.getName();
+        return "";
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<UserInfoResponse> currentUser(Authentication authentication){
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item-> item.getAuthority())
+                .collect(Collectors.toList());
+
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), roles);
+        return ResponseEntity.ok(response);
+    }
+
+    // We have used post method because, post methods are also used for state changing actions.
+    // User signe-out indicates an action that modifies the session
+    @PostMapping("/signout")
+    public ResponseEntity<?> signoutUser(){
+        ResponseCookie cookie = jwtUtils.generateCleanCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                        cookie.toString())
+                .body(new MessageResponse("You have been signed out!"));
+    }
+    
 }

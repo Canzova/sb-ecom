@@ -1,0 +1,59 @@
+╔════════════════════════════════════════════════════════════╗
+║                🍪 JWT IN COOKIES — SIMPLE EXPLANATION      ║
+╚════════════════════════════════════════════════════════════╝
+
+🔹 **1. What does using cookies with JWT actually mean?**
+-----------------------------------------------------------
+You are *not* doing a cookie-based login.
+You are only *wrapping the JWT inside a cookie*.
+
+The cookie is just a **container** holding your JWT token.
+
+Nothing more. Nothing less.
+
+-----------------------------------------------------------
+🔹 **2. Why use cookies for JWT?**
+-----------------------------------------------------------
+
+🍪 **Browsers send cookies automatically**
+This means you don’t need to manually attach:
+Authorization: Bearer <token>
+
+The browser sends the cookie with every request:
+Cookie: jwt=eyJhbGci...
+
+🔐 **HttpOnly cookies improve security**
+- Cannot be accessed by JavaScript → protects against XSS
+- Can be `Secure`, `SameSite`, etc.
+
+⚡ Still 100% STATELESS
+Every request is authenticated by:
+1. Browser sends cookie
+2. Server extracts JWT
+3. Server validates JWT
+4. SecurityContext is populated
+5. Controller receives Authentication
+
+No sessions. No server memory. No login state stored.
+
+-----------------------------------------------------------
+🔹 **3. What cookies DO NOT do**
+-----------------------------------------------------------
+
+❌ Do NOT store login state
+❌ Do NOT replace the JWT
+❌ Do NOT create server sessions
+❌ Do NOT make the app stateful
+
+They ONLY deliver the JWT to the server automatically.
+
+-----------------------------------------------------------
+🔹 **4. Correct Understanding (Summary)**
+-----------------------------------------------------------
+
+✔️ Cookies = "Delivery mechanism"
+✔️ JWT = "Identity + authorization data"
+✔️ App = Still stateless
+✔️ Server = Authenticates every request from token inside cookie
+
+You got the concept perfectly! 🔥
