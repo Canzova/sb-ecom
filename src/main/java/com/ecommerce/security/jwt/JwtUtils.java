@@ -43,8 +43,9 @@ public class JwtUtils {
     // Getting the Json web token from cookie
     public String getJwtFromCookies(HttpServletRequest request){
         Cookie cookie = WebUtils.getCookie(request, jwtCookie);
-        System.out.println("Cookie : " + cookie.getValue());
+
         if(cookie != null){
+            System.out.println("Cookie : " + cookie.getValue());
             return cookie.getValue();
         }
 

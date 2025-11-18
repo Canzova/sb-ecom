@@ -155,6 +155,20 @@ public class AuthController {
         return new ResponseEntity<>(new MessageResponse("User registered Successfully"), HttpStatus.CREATED);
     }
 
+    /*
+        Spring injects the Authentication object automatically because it sees it as a method parameter in a web request handler.
+        This is because Spring only injects Authentication automatically in controller method parameters — nowhere else.
+
+        In controllers, Spring MVC automatically resolves method parameters like:
+        Authentication
+        Principal
+        @AuthenticationPrincipal
+
+        In service classes, Spring does NOT do this, because service methods are not tied to HTTP requests.
+        So inside a service, Spring cannot automatically give you the current Authentication unless you manually
+        read it from the SecurityContext.
+     */
+
     @GetMapping("/username")
     public String currentUserName(Authentication authentication){
         if(authentication != null) return authentication.getName();
