@@ -36,6 +36,8 @@ public class Cart {
     @OneToMany(mappedBy = "cart",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             orphanRemoval = true)
+//    If a child (CartItem) is removed from the parent’s list,
+//    Hibernate will DELETE that child from the DB automatically.
     private List<CartItem> cartItem = new ArrayList<>();
 
     private Double totalPrice = 0.0;
