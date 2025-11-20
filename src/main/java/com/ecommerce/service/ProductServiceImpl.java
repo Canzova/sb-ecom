@@ -2,10 +2,15 @@ package com.ecommerce.service;
 
 import com.ecommerce.exceptions.APIException;
 import com.ecommerce.exceptions.ResourceNotFoundException;
+import com.ecommerce.model.Cart;
+import com.ecommerce.model.CartItem;
 import com.ecommerce.model.Category;
 import com.ecommerce.model.Product;
+import com.ecommerce.payload.CartDTO;
 import com.ecommerce.payload.ProductDTO;
 import com.ecommerce.payload.ProductResponse;
+import com.ecommerce.repository.CartItemRepository;
+import com.ecommerce.repository.CartRepository;
 import com.ecommerce.repository.CategoryRepository;
 import com.ecommerce.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -20,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -27,6 +33,9 @@ public class ProductServiceImpl implements ProductService{
     ProductRepository productRepository;
     CategoryRepository categoryRepository;
     ModelMapper modelMapper;
+
+    @Autowired
+    private CartService cartService;
 
     ProductServiceImpl( ProductRepository productRepository, CategoryRepository categoryRepository, ModelMapper modelMapper){
         this.productRepository = productRepository;
@@ -39,6 +48,12 @@ public class ProductServiceImpl implements ProductService{
 
     @Value("${project.image}")
     private String path;
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
@@ -148,19 +163,42 @@ public class ProductServiceImpl implements ProductService{
         Product product = productRepository.findById(productId).
                 orElseThrow(()-> new ResourceNotFoundException("Product", "ProductId", productId));
 
-        Product updatedProduct = modelMapper.map(productDTO, Product.class);
+        // Update fields manually
+        product.setProductName(productDTO.getProductName());
+        product.setPrice(productDTO.getPrice());
+        product.setDiscount(productDTO.getDiscount());
+        product.setDescription(productDTO.getDescription());
+        product.setQuantity(productDTO.getQuantity());
+        product.setImage("default.png");
 
-        updatedProduct.setProductId(productId);
+        // Recalculate special price
+        double price = product.getPrice();
+        double discount = product.getDiscount();
+        product.setSpecialPrice(price - ((discount * 0.01) * price));
 
-        // Updating image and specialPrice
-        Double price = updatedProduct.getPrice();
-        Double discount = updatedProduct.getDiscount();
+        Product savedProduct = productRepository.save(product);
 
-        Double specialPrize = price - ((discount * 0.01) * price);
-        updatedProduct.setSpecialPrice(specialPrize);
-        updatedProduct.setImage("default.png");
+        // Get all the carts which have this product
+        List<Cart>carts = cartRepository.findCartByProductId(productId);
 
-        return modelMapper.map(productRepository.save(updatedProduct), ProductDTO.class);
+        // Convert carts into cartDTOs which we will use to update the cart info
+        List<CartDTO>cartDTOS = carts.stream()
+                .map(cart-> {
+                    CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+                    List<ProductDTO>products = cart.getCartItem().stream()
+                            .map(p-> modelMapper.map(p.getProduct(), ProductDTO.class))
+                            .toList();
+
+                    cartDTO.setProducts(products);
+                    return cartDTO;
+                })
+                .toList();
+
+        // Delete the product from each cart one by one
+        cartDTOS.forEach(cartDto -> cartService.updateProductInCart(cartDto.getCartId(), productId));
+
+        return modelMapper.map(savedProduct, ProductDTO.class);
     }
 
     @Override
@@ -168,6 +206,25 @@ public class ProductServiceImpl implements ProductService{
         // Check if this product exists
         Product product = productRepository.findById(productId)
                 .orElseThrow(()-> new ResourceNotFoundException("Product", "productId", productId));
+
+        // Get all the carts which have this product
+        List<Cart>carts = cartRepository.findCartByProductId(productId);
+
+        List<CartDTO>cartDTOS = carts.stream()
+                .map(cart-> {
+                    CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+                    List<ProductDTO>products = cart.getCartItem().stream()
+                            .map(p-> modelMapper.map(p.getProduct(), ProductDTO.class))
+                            .toList();
+
+                    cartDTO.setProducts(products);
+                    return cartDTO;
+                })
+                .toList();
+
+        // Delete the product from each cart one by one
+        cartDTOS.forEach(cartDto -> cartService.deleteProductFromCart(cartDto.getCartId(), productId));
 
         productRepository.delete(product);
         return modelMapper.map(product, ProductDTO.class);

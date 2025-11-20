@@ -216,10 +216,10 @@ public class CartServiceImpl implements CartService{
         }
 
 
-        CartItem updatedItem = cartItemRepository.save(cartItem);
-        if(updatedItem.getQuantity() == 0){
-            cartItemRepository.deleteById(updatedItem.getCartItemId());
-        }
+//        CartItem updatedItem = cartItemRepository.save(cartItem);
+//        if(updatedItem.getQuantity() == 0){
+//            cartItemRepository.deleteById(updatedItem.getCartItemId());
+//        }
 
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
 
@@ -236,6 +236,74 @@ public class CartServiceImpl implements CartService{
         return cartDTO;
     }
 
+
+//    @Override
+//    @Transactional
+//    public CartDTO updateProductQuantityInCart(Long productId, Integer quantity) {
+//
+//        // Step 1: Get the cart
+//        Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
+//        if (cart == null) throw new APIException("Cart not found");
+//
+//        // Step 2: Get the product
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+//
+//        // Step 3: Find the CartItem inside this cart
+//        CartItem cartItem = cart.getCartItem().stream()
+//                .filter(item -> item.getProduct().getProductId().equals(productId))
+//                .findFirst()
+//                .orElseThrow(() -> new APIException("Product is not in cart"));
+//
+//        int currentQty = cartItem.getQuantity();
+//        int newQty = currentQty + quantity;
+//
+//        // Step 4: Validations
+//        if (quantity == 1 && currentQty >= product.getQuantity()) {
+//            throw new APIException("Stock not available");
+//        }
+//
+//        if (newQty < 0) {
+//            throw new APIException("Invalid quantity");
+//        }
+//
+//        // Step 5: Update or remove cart item
+//        if (newQty == 0) {
+//            // Remove item from cart → orphanRemoval deletes from DB
+////            cartItem.setCart(null);  // VERY IMPORTANT
+//            cart.getCartItem().remove(cartItem);
+////            cartItemRepository.delete(cartItem);
+//
+//        } else {
+//            // Update quantity
+//            cartItem.setQuantity(newQty);
+//            cartItemRepository.save(cartItem);
+//        }
+//
+//        // Step 6: Recalculate total price from scratch
+//        double newTotal = cart.getCartItem().stream()
+//                .mapToDouble(item -> item.getProduct().getSpecialPrice() * item.getQuantity())
+//                .sum();
+//
+//        cart.setTotalPrice(newTotal);
+//        cartRepository.save(cart);
+//
+//        // Step 7: Convert to DTO
+//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+//
+//        List<ProductDTO> productDtoList = cart.getCartItem().stream()
+//                .map(item -> {
+//                    ProductDTO dto = modelMapper.map(item.getProduct(), ProductDTO.class);
+//                    dto.setQuantity(item.getQuantity());
+//                    return dto;
+//                }).toList();
+//
+//        cartDTO.setProducts(productDtoList);
+//
+//        return cartDTO;
+//    }
+
+
     @Transactional
     @Override
     public String deleteProductFromCart(Long cartId, Long productId) {
@@ -250,6 +318,30 @@ public class CartServiceImpl implements CartService{
         cartItemRepository.deleteCartItemByProductIdAndCartId(productId, cartId);
 
         return "Product" + cartItem.getProduct().getProductName() + " is deleted.";
+    }
+
+    @Override
+    public void updateProductInCart(Long cartId, Long productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(()->new ResourceNotFoundException("Cart", "cartId", cartId));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product", "productId", productId));
+
+        CartItem cartItem = cartItemRepository.findCartItemByProductIdAndCartId(productId, cartId);
+        if(cartItem == null) throw new APIException("Cart Item not found");
+
+        // Step 1 : Remove this product price from total price in cart
+        cart.setTotalPrice(cart.getTotalPrice() - (cartItem.getQuantity() * cartItem.getProductPrice()));
+
+        // Stp 2 : Now update the product price in cartItem
+        cartItem.setProductPrice(product.getSpecialPrice());
+
+        // Step 3 : Now add this updated cartItem price and quantity in cart
+        cart.setTotalPrice(cart.getTotalPrice() + (cartItem.getQuantity() * cartItem.getProductPrice()));
+
+        cartItemRepository.save(cartItem);
+        cartRepository.save(cart);
     }
 
 
