@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService{
 
         return new ProductResponse(productDTOS, productPage.getNumber(),
                 productPage.getTotalPages(), productPage.getSize(), productPage.getTotalElements()
-                ,productPage.hasNext());
+                ,productPage.isLast());
     }
 
     @Override
@@ -131,7 +131,7 @@ public class ProductServiceImpl implements ProductService{
 
         return new ProductResponse(productDTOS, productPage.getNumber(),
                 productPage.getTotalPages(), productPage.getSize(), productPage.getTotalElements()
-                ,productPage.hasNext());
+                ,productPage.isLast());
     }
 
     @Override
@@ -154,7 +154,7 @@ public class ProductServiceImpl implements ProductService{
 
         return new ProductResponse(productDTOs, productPage.getNumber(),
                 productPage.getTotalPages(), productPage.getSize(), productPage.getTotalElements()
-                ,productPage.hasNext());
+                ,productPage.isLast());
     }
 
     @Override

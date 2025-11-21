@@ -1,0 +1,112 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              🌱 SPRING JPA DDL-AUTO OPTIONS (SIMPLIFIED)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  NONE
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ Does **nothing**
+➡ Hibernate will NOT create or update tables
+
+🟦 Use when:
+   Database is already created manually.
+
+---------------------------------------------------------------
+
+2️⃣  VALIDATE
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ Checks if the DB structure matches your entity classes
+➡ If not matching → ❌ throws an error
+
+🟦 Use when:
+   You want to verify structure but don't want Hibernate to touch DB.
+
+---------------------------------------------------------------
+
+3️⃣  UPDATE
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ Auto-updates table structure
+➡ Adds missing columns
+➡ ❗ Never deletes anything
+
+🟦 Use when:
+   Ideal for development — safe & convenient.
+
+---------------------------------------------------------------
+
+4️⃣  CREATE
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ 🗑 Deletes old tables
+➡ 🆕 Creates new tables every app start
+
+🟦 Use when:
+   Testing and you don't need previous data.
+
+---------------------------------------------------------------
+
+5️⃣  CREATE-DROP
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ Works like **create** at startup
+➡ AND drops all tables on shutdown
+
+🟦 Use when:
+   Temporary testing — database exists only while app is running.
+
+---------------------------------------------------------------
+
+6️⃣  CREATE-ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━
+➡ Creates tables only if they don't exist
+➡ ❗ Does NOT update or delete anything
+
+🟦 Use when:
+   Initial setup — run only once.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    📌 SUPER SIMPLE SUMMARY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Option        | Meaning (simple)
+──────────────┼───────────────────────────────────────────────
+none          | Do nothing
+validate      | Check DB matches code
+update        | Add missing columns (never delete)
+create        | Delete everything + create fresh tables
+create-drop   | Fresh tables + drop them on shutdown
+create-only   | Create if missing, nothing else
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          🧠 WHY DOES `create-drop` DROP TABLES AGAIN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✔ CREATE
+━━━━━━━━━━━━━━━━━━━━━━━━
+Startup  → Deletes old tables + creates new ones
+Shutdown → Database still contains the created tables
+
+📌 Meaning:
+You can still inspect the tables after app stops.
+
+---------------------------------------------------------------
+
+✔ CREATE-DROP
+━━━━━━━━━━━━━━━━━━━━━━━━
+Startup  → Fresh tables
+Shutdown → ❌ Drops all tables → database becomes EMPTY
+
+📌 Meaning:
+Database behaves like an **in-memory** temporary DB.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                🧩 WHEN TO USE CREATE VS CREATE-DROP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟩 CREATE (keep after shutdown)
+• Clean DB on startup
+• Keep tables after app stops
+• Useful for inspecting DB data manually
+
+🟥 CREATE-DROP (temporary)
+• Database exists only while app runs
+• Perfect for unit tests / integration tests
+• Prevents leftover tables from polluting real DB
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

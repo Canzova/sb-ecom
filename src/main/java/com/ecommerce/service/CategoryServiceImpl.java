@@ -44,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService{
 
         return new CategoryResponse(categoryDtoList, categoryPage.getNumber(),
                 categoryPage.getTotalPages(), categoryPage.getSize(), categoryPage.getTotalElements()
-                ,categoryPage.hasNext());
+                ,categoryPage.isLast());
 
     }
 
