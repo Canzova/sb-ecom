@@ -66,7 +66,7 @@ public class User {
     @Getter
     @Setter
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
-    private List<Address> addressList = new ArrayList<>();
+    private List<Address> addressList = new ArrayList<>(); 
 
     @ToString.Exclude
     @OneToOne(mappedBy = "user",

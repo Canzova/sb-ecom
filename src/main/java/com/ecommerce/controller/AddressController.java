@@ -38,13 +38,19 @@ public class AddressController {
         return new ResponseEntity<>(allAddresses, HttpStatus.OK);
     }
 
-    @GetMapping("/addresses/{userId}")
-    public ResponseEntity<AddressResponse> getAddressById(@RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+    @GetMapping("/addresses/user/{userId}")
+    public ResponseEntity<AddressResponse> getAddressByUserId(@RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
                                                           @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
                                                           @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ADDRESS_BY, required = false) String sortBy,
                                                           @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder,
                                                           @PathVariable Long userId) {
-        AddressResponse allAddresses = addressService.getAddressById(userId, pageNumber, pageSize, sortBy, sortOrder);
+        AddressResponse allAddresses = addressService.getAddressByUserId(userId, pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<>(allAddresses, HttpStatus.OK);
+    }
+
+    @GetMapping("/addresses/{addressId}")
+    public ResponseEntity<AddressDTO> getAddressByAddressId(@PathVariable Long addressId) {
+        AddressDTO allAddresses = addressService.getAddressByAddressId(addressId);
         return new ResponseEntity<>(allAddresses, HttpStatus.OK);
     }
 
@@ -55,5 +61,18 @@ public class AddressController {
                                                          @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
         AddressResponse allAddresses = addressService.getloggedinUserAddress(pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<>(allAddresses, HttpStatus.OK);
+    }
+
+    @PutMapping("/addresses/{addressId}")
+    public ResponseEntity<AddressDTO> updateAddressById(@PathVariable Long addressId,
+                                                     @RequestBody AddressDTO address){
+        AddressDTO updatedAddress = addressService.updateAddressById(addressId, address);
+        return new ResponseEntity<>(updatedAddress, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/addresses/{addressId}")
+    public ResponseEntity<AddressDTO> deleteAddressById(@PathVariable Long addressId){
+        AddressDTO updatedAddress = addressService.deleteAddressById(addressId);
+        return new ResponseEntity<>(updatedAddress, HttpStatus.OK);
     }
 }

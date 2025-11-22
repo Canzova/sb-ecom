@@ -10,6 +10,8 @@ import com.ecommerce.payload.AddressResponse;
 import com.ecommerce.repository.AddressRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.util.AuthUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -55,14 +57,13 @@ public class AddressServiceImpl implements AddressService{
         // Step 3 : Also add this address into user
         user.getAddressList().add(savedAddress);
 
-        // Step 5 : You have updated the address inside user so also need to save user
+        // Step 4 : You have updated the address inside user so also need to save user
         User savedUser = userRepository.save(user);
 
 
-        // Step 4 : Convert the savedAddress to AddressDTO
+        // Step 6 : Convert the savedAddress to AddressDTO
         return modelMapper.map(savedAddress, AddressDTO.class);
     }
-
 
     @Override
     public AddressResponse getAllAddresses(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
@@ -88,7 +89,7 @@ public class AddressServiceImpl implements AddressService{
     }
 
     @Override
-    public AddressResponse getAddressById(Long userId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public AddressResponse getAddressByUserId(Long userId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         // Step 1 : Check if user exists
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User", "userId", userId));
@@ -143,4 +144,58 @@ public class AddressServiceImpl implements AddressService{
         return response;
     }
 
+    @Override
+    public AddressDTO updateAddressById(Long addressId, AddressDTO address) {
+        // Step 1 : Check if this address Exists
+        Address userAddress = addressRepository.findById(addressId)
+                .orElseThrow(()->new ResourceNotFoundException("Address", "addressId", addressId));
+
+        // Step 2 : Update this address ----> Manullay
+        userAddress.setStreet(address.getStreet());
+        userAddress.setCity(address.getCity());
+        userAddress.setCountry(address.getCountry());
+        userAddress.setBuilding(address.getBuilding());
+        userAddress.setPinCode(address.getPinCode());
+        userAddress.setState(address.getState());
+
+        // Step 3 : Get the logged-in user
+        User user = authUtil.loggedInUser();
+
+        // Step 4 : Set the updated address in user
+        user.getAddressList().add(userAddress);
+
+        // Step 5 : Save the user in DB ---> Saving user will also save the updated address inside it
+        userRepository.save(user);
+
+        return modelMapper.map(userAddress, AddressDTO.class);
+    }
+
+    @Override
+    public AddressDTO deleteAddressById(Long addressId) {
+        // Step 1 : Check if this address Exists
+        Address userAddress = addressRepository.findById(addressId)
+                .orElseThrow(()->new ResourceNotFoundException("Address", "addressId", addressId));
+
+        // Step 2 : Get the user
+        User user = authUtil.loggedInUser();
+
+        // Orphan removal will automatically remove this saved address, when user will get saved into db
+        user.getAddressList().remove(userAddress);
+
+        userRepository.save(user);
+
+        return modelMapper.map(userAddress, AddressDTO.class);
+    }
+
+    @Override
+    public AddressDTO getAddressByAddressId(Long addressId) {
+        // Step 1 : Get the address form db
+        Address userAddress = addressRepository.
+                findById(addressId).orElseThrow(()-> new ResourceNotFoundException("Address", "addressId", addressId));
+
+        // Step 2 : Return by converting it into DTO
+        return modelMapper.map(userAddress, AddressDTO.class);
+    }
+
 }
+
