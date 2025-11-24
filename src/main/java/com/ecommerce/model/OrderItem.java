@@ -3,12 +3,14 @@ package com.ecommerce.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="order_items")
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 
 // Items present inside one order placed by customer
 // One Item === one OrderItem class
